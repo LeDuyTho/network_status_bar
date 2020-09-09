@@ -56,8 +56,6 @@ class OnlineOffinePage extends StatelessWidget {
 }
 ```
 
-For more info, please, refer to the `main.dart` in the example.
-
 ## 📷 Screenshots
 
 <table>
