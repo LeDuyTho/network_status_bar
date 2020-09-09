@@ -1,8 +1,8 @@
 name: network_status_bar
 description: Create status bar notify your device online/offline
-version: 0.0.1
+version: 0.1.0
 author: Lê Duy Thọ
-homepage:
+homepage: https://github.com/LeDuyTho/network_status_bar
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
