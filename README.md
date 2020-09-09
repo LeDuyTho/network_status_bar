@@ -1,6 +1,6 @@
 # network_status_bar
 
-Create status bar notify your device online/offline
+Create network status bar check your device is online/offline with simple slide animation.
 
 ## Getting Started
 
