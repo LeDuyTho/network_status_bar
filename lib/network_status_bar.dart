@@ -5,10 +5,10 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
-///- by Lê Duy Thọ v1.0
+///- by Lê Duy Thọ v0.1.2
 ///Usage:
-// class OnlineOffinePagev2 extends StatelessWidget {
-//  OnlineOffinePagev2({
+// class OnlineOffinePage extends StatelessWidget {
+//  OnlineOffinePage({
 //    Key key,
 //  }) : super(key: key);
 //
@@ -40,6 +40,7 @@ class NetworkStatusBar extends StatefulWidget {
     this.textOnline = 'Đã kết nối mạng',
     this.textOffline = 'Không có kết nối mạng',
     this.fontSize = 16,
+    this.marginTop = 0.0,
     @required this.child,
   }) : super(key: key);
 
@@ -51,6 +52,7 @@ class NetworkStatusBar extends StatefulWidget {
   final String textOnline;
   final String textOffline;
   final double fontSize;
+  final double marginTop;
 
   final Widget child;
 
@@ -116,22 +118,28 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
                   break;
               }
 
-              return SlideTransition(
-                position: _animation,
-                child: Container(
-                  color: bgColor,
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        text,
-                        style: TextStyle(
-                            fontSize: widget.fontSize, color: textColor),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: widget.marginTop),
+                  SlideTransition(
+                    position: _animation,
+                    child: Container(
+                      color: bgColor,
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            text,
+                            style: TextStyle(
+                                fontSize: widget.fontSize, color: textColor),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               );
             }
             return Center();
