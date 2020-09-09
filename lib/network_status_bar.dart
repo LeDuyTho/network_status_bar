@@ -1,0 +1,225 @@
+library network_status_bar;
+
+import 'dart:async';
+
+import 'package:connectivity/connectivity.dart';
+import 'package:flutter/material.dart';
+
+///- by Lê Duy Thọ v1.0
+///Usage:
+// class OnlineOffinePagev2 extends StatelessWidget {
+//  OnlineOffinePagev2({
+//    Key key,
+//  }) : super(key: key);
+//
+//  @override
+//  Widget build(BuildContext context) {
+//    return Scaffold(
+//      appBar: AppBar(
+//        title: Text(
+//          'network status bar',
+//        ),
+//      ),
+//      body: NetworkStatusBar(
+//        child: Container(
+//          height: 300,
+//          color: Colors.yellow,
+//        ),
+//      ),
+//    );
+//  }
+//}
+
+class NetworkStatusBar extends StatefulWidget {
+  NetworkStatusBar({
+    Key key,
+    this.backgroundOnlineColor = Colors.green,
+    this.backgroundOfflineColor = Colors.red,
+    this.textOnlineColor = Colors.white,
+    this.textOfflineColor = Colors.white,
+    this.textOnline = 'Đã kết nối mạng',
+    this.textOffline = 'Không có kết nối mạng',
+    this.fontSize = 16,
+    @required this.child,
+  }) : super(key: key);
+
+  final Color backgroundOnlineColor;
+  final Color backgroundOfflineColor;
+  final Color textOnlineColor;
+  final Color textOfflineColor;
+
+  final String textOnline;
+  final String textOffline;
+  final double fontSize;
+
+  final Widget child;
+
+  @override
+  _NetworkStatusBarState createState() => _NetworkStatusBarState();
+}
+
+class _NetworkStatusBarState extends State<NetworkStatusBar>
+    with TickerProviderStateMixin {
+  ConnectivityBloc _connectivity = ConnectivityBloc();
+
+  AnimationController _animationController;
+  Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _initConnectivity();
+    _initAnimation();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _connectivity.disposeStream();
+    _animationController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        StreamBuilder(
+          stream: _connectivity.myStream,
+          builder: (context, snapshot) {
+            String string;
+            Color bgColor;
+            String text = '';
+            Color textColor;
+
+            if (snapshot.hasData) {
+              ConnectivityResult result = snapshot.data;
+              switch (result) {
+                case ConnectivityResult.none:
+                  string = "Offline";
+                  text = widget.textOffline;
+                  textColor = widget.textOfflineColor;
+                  bgColor = widget.backgroundOfflineColor;
+                  break;
+                case ConnectivityResult.mobile:
+                  string = "Mobile: Online";
+                  text = widget.textOnline;
+                  textColor = widget.textOnlineColor;
+                  bgColor = widget.backgroundOnlineColor;
+                  break;
+                case ConnectivityResult.wifi:
+                  string = "WiFi: Online";
+                  text = widget.textOnline;
+                  textColor = widget.textOnlineColor;
+                  bgColor = widget.backgroundOnlineColor;
+                  break;
+              }
+
+              return SlideTransition(
+                position: _animation,
+                child: Container(
+                  color: bgColor,
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        text,
+                        style: TextStyle(
+                            fontSize: widget.fontSize, color: textColor),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+            return Center();
+          },
+        ),
+      ],
+    );
+  }
+
+  void _initConnectivity() {
+    _connectivity.initialise();
+    _connectivity.myStream.listen((source) {
+      if (!_connectivity.flagInitOnline) _startAnimation();
+    });
+  }
+
+  void _initAnimation() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _animation = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: const Offset(0, 0),
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.fastOutSlowIn,
+    ));
+
+    _animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Timer(Duration(milliseconds: 900), () {
+          _animationController.reverse();
+        });
+      }
+    });
+  }
+
+  void _startAnimation() {
+    //print('startAnimation..');
+    Timer(Duration(milliseconds: 600), () {
+      _animationController.forward();
+    });
+  }
+}
+
+class ConnectivityBloc {
+//  ConnectivityBloc._internal();
+//  static final ConnectivityBloc _instance = ConnectivityBloc._internal();
+//  static ConnectivityBloc get instance => _instance;
+
+  Connectivity connectivity = Connectivity();
+
+  StreamController controller = StreamController.broadcast();
+
+  Stream get myStream => controller.stream;
+
+  bool flagInitOnline = false; // add
+
+  void initialise() async {
+    //print('initial');
+    ConnectivityResult result = await connectivity.checkConnectivity();
+
+    _checkStatus(result);
+    if (result != ConnectivityResult.none) flagInitOnline = true;
+
+    connectivity.onConnectivityChanged.listen((result) {
+      _checkStatus(result);
+    });
+  }
+
+  void _checkStatus(ConnectivityResult result) async {
+    flagInitOnline = false;
+    //bool isOnline = await isConnectInternet();
+    controller.sink.add(result);
+  }
+
+  Future<bool> isConnectInternet() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi) {
+      //print('INTERNET CONNECTED');
+      return true;
+    }
+    //print('NO INTERNET');
+    return false;
+  }
+
+  void disposeStream() => controller.close();
+}
