@@ -61,10 +61,10 @@ class OnlineOffinePage extends StatelessWidget {
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/LeDuyTho/network_status_bar/blob/master/screenshots/online.jpg" width="250px">
+      <img src="https://raw.githubusercontent.com/LeDuyTho/network_status_bar/master/screenshots/online.jpg" width="250px">
     </td>
     <td align="center">
-      <img src="https://github.com/LeDuyTho/network_status_bar/blob/master/screenshots/offline.jpg" width="250px">
+      <img src="https://raw.githubusercontent.com/LeDuyTho/network_status_bar/master/screenshots/offline.jpg" width="250px">
     </td>
   </tr>
 </table>
