@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
-///- by Lê Duy Thọ v0.1.4
+///- by Lê Duy Thọ v0.1.5
 ///Usage:
 // class OnlineOffinePage extends StatelessWidget {
 //  OnlineOffinePage({
@@ -47,6 +47,7 @@ class NetworkStatusBar extends StatefulWidget {
     this.textOffline = 'Không có kết nối mạng',
     this.fontSize = 16,
     this.marginTop = 0.0,
+    this.marginBottom = 0.0,
     @required this.child,
   }) : super(key: key);
 
@@ -61,6 +62,7 @@ class NetworkStatusBar extends StatefulWidget {
   final String textOffline;
   final double fontSize;
   final double marginTop;
+  final double marginBottom;
 
   final Widget child;
 
@@ -95,65 +97,85 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
     return Stack(
       children: [
         widget.child,
-        StreamBuilder(
-          stream: _connectivity.myStream,
-          builder: (context, snapshot) {
-            String string;
-            Color bgColor;
-            String text = '';
-            Color textColor;
+        (widget.direction == NetworkStatusBarDirection.fromTop)
+            ? _statusBarFromTop()
+            : _statusBarFromBottom(),
+      ],
+    );
+  }
 
-            if (snapshot.hasData) {
-              ConnectivityResult result = snapshot.data;
-              switch (result) {
-                case ConnectivityResult.none:
-                  string = "Offline";
-                  text = widget.textOffline;
-                  textColor = widget.textOfflineColor;
-                  bgColor = widget.backgroundOfflineColor;
-                  break;
-                case ConnectivityResult.mobile:
-                  string = "Mobile: Online";
-                  text = widget.textOnline;
-                  textColor = widget.textOnlineColor;
-                  bgColor = widget.backgroundOnlineColor;
-                  break;
-                case ConnectivityResult.wifi:
-                  string = "WiFi: Online";
-                  text = widget.textOnline;
-                  textColor = widget.textOnlineColor;
-                  bgColor = widget.backgroundOnlineColor;
-                  break;
-              }
+  Widget _statusBarFromTop() {
+    return _streamContainer();
+  }
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: widget.marginTop),
-                  SlideTransition(
-                    position: _animation,
-                    child: Container(
-                      color: bgColor,
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            text,
-                            style: TextStyle(
-                                fontSize: widget.fontSize, color: textColor),
-                          ),
-                        ],
+  Widget _statusBarFromBottom() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: _streamContainer(),
+    );
+  }
+
+  Widget _streamContainer() {
+    return Container(
+      margin:
+          EdgeInsets.only(top: widget.marginTop, bottom: widget.marginBottom),
+      child: StreamBuilder(
+        stream: _connectivity.myStream,
+        builder: (context, snapshot) {
+          String string;
+          Color bgColor;
+          String text = '';
+          Color textColor;
+
+          if (snapshot.hasData) {
+            ConnectivityResult result = snapshot.data;
+            switch (result) {
+              case ConnectivityResult.none:
+                string = "Offline";
+                text = widget.textOffline;
+                textColor = widget.textOfflineColor;
+                bgColor = widget.backgroundOfflineColor;
+                break;
+              case ConnectivityResult.mobile:
+                string = "Mobile: Online";
+                text = widget.textOnline;
+                textColor = widget.textOnlineColor;
+                bgColor = widget.backgroundOnlineColor;
+                break;
+              case ConnectivityResult.wifi:
+                string = "WiFi: Online";
+                text = widget.textOnline;
+                textColor = widget.textOnlineColor;
+                bgColor = widget.backgroundOnlineColor;
+                break;
+            }
+
+            return SlideTransition(
+              position: _animation,
+              child: Container(
+                color: bgColor,
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        text,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: widget.fontSize,
+                          color: textColor,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            }
-            return Center();
-          },
-        ),
-      ],
+                  ],
+                ),
+              ),
+            );
+          }
+          return Center();
+        },
+      ),
     );
   }
 
