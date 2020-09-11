@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
-///- by Lê Duy Thọ v0.1.2
+///- by Lê Duy Thọ v0.1.4
 ///Usage:
 // class OnlineOffinePage extends StatelessWidget {
 //  OnlineOffinePage({
@@ -30,9 +30,15 @@ import 'package:flutter/material.dart';
 //  }
 //}
 
+enum NetworkStatusBarDirection {
+  fromTop,
+  fromBottom,
+}
+
 class NetworkStatusBar extends StatefulWidget {
   NetworkStatusBar({
     Key key,
+    this.direction = NetworkStatusBarDirection.fromTop,
     this.backgroundOnlineColor = Colors.green,
     this.backgroundOfflineColor = Colors.red,
     this.textOnlineColor = Colors.white,
@@ -43,6 +49,8 @@ class NetworkStatusBar extends StatefulWidget {
     this.marginTop = 0.0,
     @required this.child,
   }) : super(key: key);
+
+  final NetworkStatusBarDirection direction;
 
   final Color backgroundOnlineColor;
   final Color backgroundOfflineColor;
@@ -70,16 +78,16 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
   @override
   void initState() {
     super.initState();
-
     _initConnectivity();
     _initAnimation();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _connectivity.disposeStream();
     _animationController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -150,9 +158,8 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
   }
 
   void _initConnectivity() {
-    _connectivity.initialise();
     _connectivity.myStream.listen((source) {
-      if (!_connectivity.flagInitOnline) _startAnimation();
+      _startAnimation();
     });
   }
 
@@ -162,9 +169,12 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
       vsync: this,
     );
 
+    double yBegin =
+        (widget.direction == NetworkStatusBarDirection.fromTop) ? -1 : 1;
+
     _animation = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: const Offset(0, 0),
+      begin: Offset(0, yBegin),
+      end: Offset(0, 0),
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.fastOutSlowIn,
@@ -173,16 +183,15 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
     _animation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Timer(Duration(milliseconds: 900), () {
-          _animationController.reverse();
+          if (_animationController != null) _animationController.reverse();
         });
       }
     });
   }
 
   void _startAnimation() {
-    //print('startAnimation..');
     Timer(Duration(milliseconds: 600), () {
-      _animationController.forward();
+      if (_animationController != null) _animationController.forward();
     });
   }
 }
@@ -192,30 +201,28 @@ class ConnectivityBloc {
 //  static final ConnectivityBloc _instance = ConnectivityBloc._internal();
 //  static ConnectivityBloc get instance => _instance;
 
-  Connectivity connectivity = Connectivity();
+  ConnectivityBloc() {
+    initConnect();
+  }
 
   StreamController controller = StreamController.broadcast();
 
+  StreamSubscription<ConnectivityResult> subscriptionConnect;
+
   Stream get myStream => controller.stream;
 
-  bool flagInitOnline = false; // add
+  bool firstLoad = true; // add
 
-  void initialise() async {
-    //print('initial');
-    ConnectivityResult result = await connectivity.checkConnectivity();
+  void initConnect() async {
+    Connectivity connectivity = Connectivity();
+    //ConnectivityResult check = await connectivity.checkConnectivity();
 
-    _checkStatus(result);
-    if (result != ConnectivityResult.none) flagInitOnline = true;
-
-    connectivity.onConnectivityChanged.listen((result) {
-      _checkStatus(result);
+    subscriptionConnect = connectivity.onConnectivityChanged.listen((result) {
+      if (firstLoad == false ||
+          (firstLoad == true && result == ConnectivityResult.none))
+        controller.sink.add(result);
+      firstLoad = false;
     });
-  }
-
-  void _checkStatus(ConnectivityResult result) async {
-    flagInitOnline = false;
-    //bool isOnline = await isConnectInternet();
-    controller.sink.add(result);
   }
 
   Future<bool> isConnectInternet() async {
@@ -229,5 +236,8 @@ class ConnectivityBloc {
     return false;
   }
 
-  void disposeStream() => controller.close();
+  void disposeStream() async {
+    controller.close();
+    subscriptionConnect.cancel();
+  }
 }
