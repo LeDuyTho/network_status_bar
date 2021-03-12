@@ -17,7 +17,7 @@ samples, guidance on mobile development, and a full API reference.
 
 ```yaml
 dependencies:
-  network_status_bar: ^0.1.5
+  network_status_bar: ^0.1.6
 ```
 
 ### Import
