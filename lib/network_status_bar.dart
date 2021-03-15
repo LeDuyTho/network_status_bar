@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
-///- by Lê Duy Thọ v0.1.5
+///- by Lê Duy Thọ v0.1.8
 ///Usage:
 // class OnlineOffinePage extends StatelessWidget {
 //  OnlineOffinePage({
