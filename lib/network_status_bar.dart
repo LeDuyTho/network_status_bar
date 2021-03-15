@@ -122,7 +122,6 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
       child: StreamBuilder(
         stream: _connectivity.myStream,
         builder: (context, snapshot) {
-          String string;
           Color bgColor;
           String text = '';
           Color textColor;
@@ -131,19 +130,16 @@ class _NetworkStatusBarState extends State<NetworkStatusBar>
             ConnectivityResult result = snapshot.data;
             switch (result) {
               case ConnectivityResult.none:
-                string = "Offline";
                 text = widget.textOffline;
                 textColor = widget.textOfflineColor;
                 bgColor = widget.backgroundOfflineColor;
                 break;
               case ConnectivityResult.mobile:
-                string = "Mobile: Online";
                 text = widget.textOnline;
                 textColor = widget.textOnlineColor;
                 bgColor = widget.backgroundOnlineColor;
                 break;
               case ConnectivityResult.wifi:
-                string = "WiFi: Online";
                 text = widget.textOnline;
                 textColor = widget.textOnlineColor;
                 bgColor = widget.backgroundOnlineColor;
