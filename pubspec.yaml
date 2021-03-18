@@ -1,7 +1,7 @@
 name: network_status_bar
 description: Create network status bar detect your device online/offline with slide animation.
 version: 0.1.8
-author: Lê Duy Thọ
+author: Le Duy Tho
 homepage: https://github.com/LeDuyTho/network_status_bar
 
 environment:
